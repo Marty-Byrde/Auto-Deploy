@@ -1,5 +1,7 @@
 /.idea
 *.iml
+/node_modules
+.env
 
 *.json
 !package.json

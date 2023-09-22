@@ -97,5 +97,5 @@ app.get(`/${process.env.DEPLOY_ROUTE}/`, async (req: Request, res: Response) => 
   await executeDeploymentJob(job)
   console.log(`${getTimestamp()} The deployment-job (${colors.yellow(name)}) has been completed.`)
 
-  res.sendStatus(202)
+  res.sendStatus(200)
 })

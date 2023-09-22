@@ -54,7 +54,7 @@ async function init() {
 
 
 async function executeDeploymentJob(deployment_config: AutoDeployItem) {
-  console.log(`Executing auto-deploy for ${deployment_config.key}...`)
+  console.log(`Executing auto-deploy for ${deployment_config.name}...`)
   const connection = await sshClient.connect({
     host: deployment_config.vps_ip,
     username: deployment_config.vps_Credentials.username,
@@ -81,9 +81,10 @@ app.get(`/${process.env.DEPLOY_ROUTE}/`, async (req: Request, res: Response) => 
 
   if(!job) return res.sendStatus(200)
 
-  console.log(`An deployment job was found and will be executed...`)
+  const {name} = job
+  console.log(`An deployment-job (${name}) was found and will be executed...`)
   await executeDeploymentJob(job)
-  console.log(`The deployment-job ${key} has been completed.`)
+  console.log(`The deployment-job (${name}) has been completed.`)
 
   res.sendStatus(202)
 })

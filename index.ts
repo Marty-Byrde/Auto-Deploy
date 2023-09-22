@@ -72,3 +72,17 @@ async function executeDeploymentJob(deployment_config: AutoDeployItem) {
 
   return Promise.all(responses);
 }
+
+
+app.get(`/${process.env.DEPLOY_ROUTE}/`, async (req: Request, res: Response) => {
+  const { key } = req.query
+  const job = await collection.findType<AutoDeployItem>({ key: key })
+
+  if(!job || job.length === 0) return res.sendStatus(200)
+
+  console.log(`An deployment job was found and will be executed...`)
+  await executeDeploymentJob(job[0])
+  console.log(`The deployment-job ${key} has been completed.`)
+
+  res.sendStatus(202)
+})

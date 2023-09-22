@@ -50,3 +50,25 @@ async function init() {
   app.use(queue({ activeLimit: rateLimt, queuedLimit: -1 }));
   console.log(`Active requests limited to ${rateLimt}.`)
 }
+
+
+async function executeDeploymentJob(deployment_config: AutoDeployItem) {
+  console.log(`Executing auto-deploy for ${deployment_config.key}...`)
+  const connection = await sshClient.connect({
+    host: deployment_config.vps_ip,
+    username: deployment_config.vps_Credentials.username,
+    password: deployment_config.vps_Credentials.password
+  })
+  console.log(`Connected to the VPS.`)
+
+  const responses = deployment_config.scriptLines.map(async (script) => {
+    const { command, args, passwordRequired } = script
+    const sudoPassword = { stdin: deployment_config.vps_Credentials.password + "\n", execOptions: { pty: true } }
+
+    return passwordRequired ?
+      connection.exec(command, args ?? [], sudoPassword) :
+      connection.execCommand(`${command} ${args?.join(" ")}`)
+  })
+
+  return Promise.all(responses);
+}

@@ -13,7 +13,8 @@ let dbHandler: DBHandler
 let collection: AdvancedCollection;
 
 interface AutoDeployItem {
-  key: string
+  key: string,
+  name: string,
   vps_ip: string
   vps_Credentials: {
     username: string

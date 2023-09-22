@@ -3,7 +3,8 @@ import bodyParser from "body-parser"
 import queue from 'express-queue';
 import * as dotenv from 'dotenv'
 import { AdvancedCollection, DBHandler } from 'mongodb_handler'
-import { NodeSSH, SSHExecCommandResponse } from 'node-ssh'
+import { NodeSSH } from 'node-ssh'
+import colors from "colors"
 
 dotenv.config({ path: './.env' })
 const app: Express = express()
@@ -29,6 +30,11 @@ interface ScriptLine {
   passwordRequired?: boolean
 }
 
+const getTimestamp = () => {
+  const date = new Date(Date.now())
+  const formatTwoDigit = (value: string | number) => value.toString().length === 1 ? `0${value}` : value
+  return colors.green(`[${formatTwoDigit(date.getDate())}.${formatTwoDigit((date.getMonth() + 1))}.${date.getFullYear().toString().slice(2)} ${formatTwoDigit(date.getHours())}:${formatTwoDigit(date.getMinutes())}:${formatTwoDigit(date.getSeconds())}]`)
+}
 
 
 init()
@@ -82,9 +88,9 @@ app.get(`/${process.env.DEPLOY_ROUTE}/`, async (req: Request, res: Response) => 
   if(!job) return res.sendStatus(200)
 
   const {name} = job
-  console.log(`An deployment-job (${name}) was found and will be executed...`)
+  console.log(`${getTimestamp()} An deployment-job (${colors.yellow(name)}) was found and will be executed...`)
   await executeDeploymentJob(job)
-  console.log(`The deployment-job (${name}) has been completed.`)
+  console.log(`${getTimestamp()} The deployment-job (${colors.yellow(name)}) has been completed.`)
 
   res.sendStatus(202)
 })

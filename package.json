@@ -1,14 +1,22 @@
 {
-  "name": "ts-template",
+  "name": "auto-deploy",
   "version": "1.0.0",
   "main": "dist/index",
   "types": "dist/index",
   "scripts": {
-    "dev": "ts-node tests",
+    "dev": "ts-node index",
     "build": "tsc --build tsconfig.json",
     "prepublish": "tsc --build tsconfig.json"
   },
   "dependencies": {
+    "@types/express": "^4.17.17",
+    "body-parser": "^1.20.2",
+    "colors": "^1.4.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-queue": "^0.0.13",
+    "mongodb_handler": "^1.0.11",
+    "node-ssh": "^13.1.0"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",

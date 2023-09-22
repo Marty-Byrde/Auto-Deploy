@@ -40,34 +40,37 @@ const getTimestamp = () => {
 init()
 
 async function init() {
-  console.log("Initializing database connection...")
+  // @ts-ignore
+  const ConfigTag = () => `${getTimestamp()} ${colors.brightRed("[Config]")}`
+  console.log(`${ConfigTag()} Initializing database connection...`)
   dbHandler = new DBHandler(process.env.MONGO_HOST, parseInt(process.env.MONGO_PORT))
   await dbHandler.connect()
 
   collection = await dbHandler.getCollection(process.env.MONGO_DB, process.env.MONGO_COLLECTION)
   const items = await collection.findType<AutoDeployItem>({})
-  console.log(`${items.length} auto-deploy entries found in the database.`)
+  console.log(`${ConfigTag()} Watching for ${items.length} development-jobs.`)
 
-  console.log(`Configuring the rate limits for this express-app...`)
+  console.log(`${ConfigTag()} Configuring the rate limits for this express-app...`)
   app.listen(process.env.PORT, async () => {
-    console.log(`Server has been started on port ${process.env.PORT}`)
+    console.log(`${ConfigTag()} Server has been started on port ${process.env.PORT}`)
   })
 
   const rateLimt = Math.round(items.length * 1.5)
   app.use(queue({ activeLimit: rateLimt, queuedLimit: -1 }));
-  console.log(`Active requests limited to ${rateLimt}.`)
+  console.log(`${ConfigTag()} Active requests limited to ${rateLimt}.`)
 }
 
 
 async function executeDeploymentJob(deployment_config: AutoDeployItem) {
-  console.log(`Executing auto-deploy for ${deployment_config.name}...`)
+  console.log(`${getTimestamp()} Executing auto-deploy for ${colors.yellow(deployment_config.name)}...`)
   const connection = await sshClient.connect({
     host: deployment_config.vps_ip,
     username: deployment_config.vps_Credentials.username,
     password: deployment_config.vps_Credentials.password
   })
-  console.log(`Connected to the VPS.`)
+  console.log(`${getTimestamp()} Connected to the VPS.`)
 
+  console.log(`${getTimestamp()} Executing the scripts...`)
   const responses = deployment_config.scriptLines.map(async (script) => {
     const { command, args, passwordRequired } = script
     const sudoPassword = { stdin: deployment_config.vps_Credentials.password + "\n", execOptions: { pty: true } }
@@ -76,8 +79,10 @@ async function executeDeploymentJob(deployment_config: AutoDeployItem) {
       connection.exec(command, args ?? [], sudoPassword) :
       connection.execCommand(`${command} ${args?.join(" ")}`)
   })
+  const result = Promise.all(responses);
+  console.log(`${getTimestamp()} All scripts (${deployment_config.scriptLines.length}) have been executed.`)
 
-  return Promise.all(responses);
+  return result
 }
 
 
